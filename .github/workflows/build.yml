@@ -74,7 +74,7 @@ jobs:
           version="${GITHUB_REF_NAME}"
           [[ "$GITHUB_REF_TYPE" == "tag" ]] || version="dev-${GITHUB_SHA::7}"
           cd build/KingsIntoClowns_artefacts/Release
-          rm -f CLAP/*.exp CLAP/*.lib
+          rm -f CLAP/*.exp CLAP/*.lib VST3/*.exp VST3/*.lib
           formats=""
           for f in CLAP VST3 AU Standalone; do [[ -d "$f" ]] && formats="$formats $f"; done
           cp ../../../LICENSE ../../../THIRD_PARTY_NOTICES.md .
