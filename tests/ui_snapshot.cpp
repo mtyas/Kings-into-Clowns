@@ -25,7 +25,10 @@ void setParam(juce::AudioProcessor& p, const juce::String& id, float plainValue)
             r->setValueNotifyingHost(r->convertTo0to1(plainValue));
 }
 
+float lastPeak = 0.0f;
+
 void play(juce::AudioProcessor& proc, double seconds, const std::vector<int>& notes) {
+    lastPeak = 0.0f;
     juce::AudioBuffer<float> buf(2, 512);
     juce::MidiBuffer midi;
     const int blocks = static_cast<int>(seconds * 48000.0 / 512.0);
@@ -35,6 +38,7 @@ void play(juce::AudioProcessor& proc, double seconds, const std::vector<int>& no
             for (int n : notes) midi.addEvent(juce::MidiMessage::noteOn(1, n, 0.85f), 0);
         buf.clear();
         proc.processBlock(buf, midi);
+        lastPeak = std::max(lastPeak, buf.getMagnitude(0, buf.getNumSamples()));
         if (b % 4 == 3) juce::MessageManager::getInstance()->runDispatchLoopUntil(12);
     }
 }
@@ -108,6 +112,56 @@ int main(int argc, char** argv) {
             std::cout << "journey canvas repaint: " << (juce::Time::getMillisecondCounterHiRes() - t1) / 60.0 << " ms" << std::endl;
         }
     }
+
+    // Init, then other models / modes: the dial names follow them
+    if (auto* kic = dynamic_cast<KingsIntoClownsProcessor*>(proc.get())) kic->getPresetManager().loadInit();
+    play(*proc, 1.5, { 48, 55, 64 });
+    if (juce::String(argc > 2 ? argv[2] : "") == "--levels") {
+        // Level survey: the same chord through every patch
+        auto* kic = dynamic_cast<KingsIntoClownsProcessor*>(proc.get());
+        auto& pm = kic->getPresetManager();
+        auto survey = [&](const juce::String& name) {
+            proc->reset();
+            play(*proc, 0.05, {});
+            juce::AudioBuffer<float> buf(2, 512);
+            juce::MidiBuffer midi;
+            double sumSq = 0.0; float peak = 0.0f; long n = 0;
+            for (int b = 0; b < 200; ++b) {
+                midi.clear();
+                if (b == 0) for (int note : { 48, 55, 64 }) midi.addEvent(juce::MidiMessage::noteOn(1, note, 0.85f), 0);
+                if (b == 120) for (int note : { 48, 55, 64 }) midi.addEvent(juce::MidiMessage::noteOff(1, note, 0.0f), 0);
+                buf.clear();
+                proc->processBlock(buf, midi);
+                peak = std::max(peak, buf.getMagnitude(0, 512));
+                for (int i = 0; i < 512; ++i) { sumSq += buf.getSample(0, i) * buf.getSample(0, i); ++n; }
+            }
+            std::cout << "LEVEL  peak " << juce::String(juce::Decibels::gainToDecibels(peak), 1) << " dBFS   rms "
+                      << juce::String(juce::Decibels::gainToDecibels(static_cast<float>(std::sqrt(sumSq / n))), 1) << " dBFS   " << name << std::endl;
+        };
+        pm.loadInit();
+        survey("Init");
+        for (int i = 0; i < pm.getNumPresets(); ++i) { pm.loadPreset(i); survey(pm.getCurrentPreset()->name); }
+        return 0;
+    }
+    std::cout << "Init chord peak: " << juce::Decibels::gainToDecibels(lastPeak) << " dBFS" << std::endl;
+    save(*editor, outDir.getChildFile("07_init.png"));
+    setParam(*proc, "osc_engine", 2.0f);    // Two-Operator FM
+    setParam(*proc, "rings_model", 3.0f);   // FM Follower
+    setParam(*proc, "clouds_mode", 1.0f);   // Pitch Shifter
+    play(*proc, 1.0, { 57, 64 });
+    save(*editor, outDir.getChildFile("08_dynamic_names.png"));
+
+    // Touch mode on
+    if (auto* tides = findChild<ric::ui::TidesPanel>(*editor)) tides->select(0);
+    std::function<juce::TextButton*(juce::Component&)> findTouch = [&](juce::Component& c) -> juce::TextButton* {
+        if (auto* b = dynamic_cast<juce::TextButton*>(&c); b != nullptr && b->getButtonText() == "Touch") return b;
+        for (auto* child : c.getChildren()) if (auto* r = findTouch(*child)) return r;
+        return nullptr;
+    };
+    if (auto* touch = findTouch(*editor)) touch->setToggleState(true, juce::sendNotificationSync);
+    play(*proc, 0.6, {});
+    save(*editor, outDir.getChildFile("09_touch_mode.png"));
+    if (auto* touch = findTouch(*editor)) touch->setToggleState(false, juce::sendNotificationSync);
 
     if (auto* browser = findChild<ric::ui::PresetBrowserModal>(*editor)) browser->openBrowser();
     juce::MessageManager::getInstance()->runDispatchLoopUntil(50);

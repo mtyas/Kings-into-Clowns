@@ -379,6 +379,16 @@ void SynthEngine::renderSubBlockInternal(int startSample, int numSamples,
         modMatrix_.evaluate(liveSources, params.voiceCtx.baseDestParams, zeroPoly, liveFinalDests);
     }
 
+    // Headroom: several ringing voices sum well above full scale, so the voice bus is trimmed
+    // before the clouds and the output stage (which otherwise saturated on ordinary chords)
+    constexpr float kVoiceBusTrim = 0.7f;
+    for (size_t i = 0; i < n; ++i) {
+        dryBusL[i] *= kVoiceBusTrim;
+        dryBusR[i] *= kVoiceBusTrim;
+        cloudsSendL[i] *= kVoiceBusTrim;
+        cloudsSendR[i] *= kVoiceBusTrim;
+    }
+
     // 4. Process Clouds Granular & Oliverb Diffusion Engine (unless bypassed)
     using namespace ric::mod;
     CloudsPatch cPatch = params.clouds;

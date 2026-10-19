@@ -244,6 +244,92 @@ int main() {
         std::cout << "[PASS] Loom melody target " << target << " (voice notes " << minNote << " .. " << maxNote << ")" << std::endl;
     }
 
+    // 7. Strings must always die away after release, whatever the Structure (no self-oscillation)
+    for (int model : { 1, 2, 4, 5 }) {
+        for (float structure : { 0.0f, 0.25f, 0.5f, 0.75f, 1.0f }) {
+            engine.reset();
+            auto params = makeDefaultTestParams();
+            params.voiceCtx.ringsModel = model;
+            params.voiceCtx.ringsPoly = 0;
+            params.voiceCtx.cloudsBypass = true;
+            params.voiceCtx.oscEngine = 11;
+            params.voiceCtx.baseDestParams[static_cast<size_t>(ric::mod::Dest::RingsStructure)] = structure;
+            params.voiceCtx.baseDestParams[static_cast<size_t>(ric::mod::Dest::RingsDamping)] = 0.6f;
+            for (size_t i = 0; i < 3; ++i) params.voiceCtx.envs[i] = { 0.005f, 0.3f, 0.5f, 0.3f };
+            midiBuf.clear();
+            midiBuf.addEvent(juce::MidiMessage::noteOn(1, 48, 0.9f), 0);
+            engine.renderBlock(audioBuf, midiBuf, params, fifo);
+            midiBuf.clear();
+            for (int blk = 0; blk < 40; ++blk) engine.renderBlock(audioBuf, midiBuf, params, fifo);
+            midiBuf.addEvent(juce::MidiMessage::noteOff(1, 48, 0.0f), 0);
+            engine.renderBlock(audioBuf, midiBuf, params, fifo);
+            midiBuf.clear();
+            float tailRms = 0.0f;
+            for (int blk = 0; blk < 375; ++blk) { // 4 s after release
+                engine.renderBlock(audioBuf, midiBuf, params, fifo);
+                verifyBufferFiniteAndActive(audioBuf, tailRms);
+            }
+            const bool ok = tailRms < 0.001f;
+            std::cout << (ok ? "[PASS] " : "[FAIL] ") << "String model " << model << " structure " << structure
+                      << " dies away (tail RMS " << tailRms << ")" << std::endl;
+            if (!ok) return 1;
+        }
+    }
+
+    // 6. Cloud pitch must follow the Pitch knob only - not Size - in every mode that transposes
+    {
+        auto measureHz = [](int mode, float size, float semis) {
+            ric::dsp::CloudsWrapper clouds;
+            clouds.prepare(48000.0);
+            ric::dsp::CloudsPatch patch{};
+            patch.mode = mode;
+            patch.position = 0.1f;
+            patch.size = size;
+            patch.pitch = semis;
+            patch.density = 0.5f;
+            patch.texture = 0.5f;
+            patch.feedback = 0.0f;
+            patch.reverb = 0.0f;
+            patch.stereoSpread = 0.0f;
+            patch.dryWet = 1.0f;
+            constexpr size_t kBlock = 24;
+            constexpr int kBlocks = 48000 * 3 / 24;
+            float inL[kBlock], inR[kBlock], outL[kBlock], outR[kBlock];
+            double phase = 0.0;
+            int crossings = 0;
+            float prev = 0.0f;
+            for (int b = 0; b < kBlocks; ++b) {
+                for (size_t i = 0; i < kBlock; ++i) {
+                    inL[i] = inR[i] = 0.5f * static_cast<float>(std::sin(phase));
+                    phase += 2.0 * 3.14159265358979 * 440.0 / 48000.0;
+                }
+                clouds.processSubBlock(patch, inL, inR, outL, outR, kBlock);
+                if (b >= kBlocks / 2) // measure over the last 1.5 s
+                    for (size_t i = 0; i < kBlock; ++i) {
+                        if (prev <= 0.0f && outL[i] > 0.0f) ++crossings;
+                        prev = outL[i];
+                    }
+            }
+            return static_cast<float>(crossings) / 1.5f;
+        };
+
+        struct Case { int mode; const char* name; float size; float semis; };
+        const Case cases[] = {
+            { 1, "pitch shifter", 0.1f, 0.0f }, { 1, "pitch shifter", 1.0f, 0.0f },
+            { 1, "pitch shifter", 1.0f, 12.0f }, { 1, "pitch shifter", 0.2f, -12.0f },
+            { 2, "looping delay", 0.3f, 0.0f }, { 2, "looping delay", 0.9f, 0.0f },
+            { 2, "looping delay", 0.5f, 12.0f },
+        };
+        for (const auto& c : cases) {
+            const float expected = 440.0f * std::pow(2.0f, c.semis / 12.0f);
+            const float hz = measureHz(c.mode, c.size, c.semis);
+            const bool ok = std::abs(hz / expected - 1.0f) < 0.04f;
+            std::cout << (ok ? "[PASS] " : "[FAIL] ") << "Cloud " << c.name << " size " << c.size << " pitch " << c.semis
+                      << " st: " << hz << " Hz (expected " << expected << ")" << std::endl;
+            if (!ok) return 1;
+        }
+    }
+
     std::cout << "=== ALL DSP VERIFICATION TESTS PASSED ===" << std::endl;
     return 0;
 }

@@ -403,7 +403,7 @@ int KingsIntoClownsProcessor::getNumPrograms() {
 }
 
 int KingsIntoClownsProcessor::getCurrentProgram() {
-    return presetManager_ ? presetManager_->getCurrentIndex() : 0;
+    return presetManager_ ? std::max(0, presetManager_->getCurrentIndex()) : 0;
 }
 
 void KingsIntoClownsProcessor::setCurrentProgram(int index) {
@@ -436,7 +436,7 @@ void KingsIntoClownsProcessor::setSavedEditorWidth(int width) {
 
 void KingsIntoClownsProcessor::getStateInformation(juce::MemoryBlock& destData) {
     auto state = apvts_.copyState();
-    state.setProperty("presetIndex", getCurrentProgram(), nullptr);
+    state.setProperty("presetIndex", presetManager_ ? presetManager_->getCurrentIndex() : 0, nullptr);
     std::unique_ptr<juce::XmlElement> xml(state.createXml());
 
     if (presetManager_) {

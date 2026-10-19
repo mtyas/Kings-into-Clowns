@@ -795,9 +795,20 @@ public:
         g.setFont(Fonts::serif(17.0f, true));
         g.setColour(Palette::kMoon);
         g.drawText("the tides", head.removeFromLeft(90), juce::Justification::centredLeft);
-        g.setFont(Fonts::caps(9.0f));
-        g.setColour(Palette::kFaint);
-        g.drawText("MODULATION  -  DRAG A TIDE ONTO ANY DIAL", head, juce::Justification::centredLeft);
+        if (touchBtn_.getToggleState()) {
+            // Touch mode must be impossible to forget
+            g.setFont(Fonts::caps(9.5f, true));
+            g.setColour(Palette::kRose);
+            g.drawText("TOUCH IS ON  -  DRAG ANY GLOWING DIAL UP OR DOWN TO SET HOW FAR " + Tides::title(selected_)
+                           + " MOVES IT  -  PRESS TOUCH AGAIN TO FINISH",
+                       head.withTrimmedRight(routingWidth() + 30), juce::Justification::centredLeft);
+            g.setColour(Palette::kRose.withAlpha(0.7f));
+            g.drawRoundedRectangle(getLocalBounds().toFloat().reduced(0.8f), 14.0f, 1.6f);
+        } else {
+            g.setFont(Fonts::caps(9.0f));
+            g.setColour(Palette::kFaint);
+            g.drawText("MODULATION  -  DRAG A TIDE ONTO ANY DIAL", head, juce::Justification::centredLeft);
+        }
 
         // Selected tide's poem above its editor
         g.setFont(Fonts::serif(12.5f, true));
@@ -889,6 +900,7 @@ private:
     }
 
     void notifyAssignMode() {
+        repaint();
         if (onAssignModeChanged)
             onAssignModeChanged(touchBtn_.getToggleState()
                                     ? std::optional<ric::mod::Source>(static_cast<ric::mod::Source>(selected_))

@@ -71,23 +71,49 @@ public:
     // Restores which preset is "current" (e.g. from saved session state) without touching parameters
     void setCurrentIndexSilently(int index) noexcept {
         if (!presets_.empty())
-            currentIndex_ = std::clamp(index, 0, static_cast<int>(presets_.size()) - 1);
+            currentIndex_ = index == kInitIndex ? kInitIndex : std::clamp(index, 0, static_cast<int>(presets_.size()) - 1);
     }
     const std::vector<ric::presets::FactoryPreset>& getAllPresets() const noexcept { return presets_; }
     const juce::StringArray& getCategories() const noexcept { return categories_; }
     juce::File getUserPresetDirectory() const noexcept { return userPresetDir_; }
 
     const ric::presets::FactoryPreset* getCurrentPreset() const noexcept {
+        if (currentIndex_ == kInitIndex) return &initPreset_;
         if (currentIndex_ >= 0 && currentIndex_ < static_cast<int>(presets_.size()))
             return &presets_[static_cast<size_t>(currentIndex_)];
         return nullptr;
     }
 
+    static constexpr int kInitIndex = -1;
+
+    // The blank Init patch: plain settings, no modulation
+    void loadInit() {
+        currentIndex_ = kInitIndex;
+        applyValues(initPreset_);
+        modMatrix_.clearAll();
+    }
+
+    bool isInit() const noexcept { return currentIndex_ == kInitIndex; }
+
     void loadPreset(int index) {
         if (presets_.empty()) return;
         currentIndex_ = std::clamp(index, 0, static_cast<int>(presets_.size()) - 1);
         const auto& preset = presets_[static_cast<size_t>(currentIndex_)];
+        applyValues(preset);
 
+        if (!preset.isFactory && preset.userFile.existsAsFile()) {
+            if (auto xml = juce::XmlDocument::parse(preset.userFile)) {
+                if (auto* modXml = xml->getChildByName("ModMatrix")) {
+                    loadModMatrixFromXml(modXml);
+                }
+            }
+        } else {
+            modMatrix_.initDefaultPoeticRouting();
+        }
+    }
+
+private:
+    void applyValues(const ric::presets::FactoryPreset& preset) {
         undoManager_.beginNewTransaction("Load Preset: " + preset.name);
 
         for (const auto& [paramId, val] : preset.values) {
@@ -104,22 +130,15 @@ public:
                     withId->setValueNotifyingHost(withId->getDefaultValue());
             }
         }
-
-        if (!preset.isFactory && preset.userFile.existsAsFile()) {
-            if (auto xml = juce::XmlDocument::parse(preset.userFile)) {
-                if (auto* modXml = xml->getChildByName("ModMatrix")) {
-                    loadModMatrixFromXml(modXml);
-                }
-            }
-        } else {
-            modMatrix_.initDefaultPoeticRouting();
-        }
     }
+
+public:
 
     void stepPreset(int delta, const juce::String& categoryFilter = "All") {
         if (presets_.empty()) return;
         const int n = static_cast<int>(presets_.size());
-        int idx = currentIndex_;
+        // From Init, "next" is the first patch and "previous" the last
+        int idx = currentIndex_ == kInitIndex ? (delta > 0 ? -1 : 0) : currentIndex_;
         for (int attempt = 0; attempt < n; ++attempt) {
             idx = (idx + delta + n) % n;
             if (categoryFilter == "All" || presets_[static_cast<size_t>(idx)].category == categoryFilter) {
@@ -231,6 +250,7 @@ private:
     std::vector<ric::presets::FactoryPreset> presets_;
     juce::StringArray categories_;
     int currentIndex_ = 0;
+    ric::presets::FactoryPreset initPreset_ = ric::presets::getInitPreset();
 };
 
 } // namespace ric::core

@@ -67,6 +67,7 @@ public:
         grainSpawnCounter_ = 0.0f;
         wsolaPhaseA_ = 0.0f;
         wsolaPhaseB_ = 0.5f;
+        loopAnchor_ = 0.0;
         memory_.fill(0.0f);
         memoryWrite_ = 0;
         memoryCounter_ = 0;
@@ -299,20 +300,23 @@ private:
 
     void processPitchShifter(bool freeze, float pos, float sz, float pitchRatio, float /*dens*/, float tex,
                              float fb, float sprd, const float* inL, const float* inR, float* wetL, float* wetR, size_t size) noexcept {
+        // Two Hann-windowed taps sweep their delay across the window. A delay that changes by
+        // (1 - ratio) samples per sample plays back at exactly `ratio`, whatever the window size,
+        // so the sweep speed is signed and nothing else may nudge it.
         const float winSamples = (0.025f + sz * 0.18f) * sampleRate_;
         const float baseDelay = (0.01f + pos * 1.2f) * sampleRate_;
-        const float phaseStep = std::abs(1.0f - pitchRatio) / winSamples + 0.00005f;
+        const float phaseStep = (1.0f - pitchRatio) / winSamples;
 
         for (size_t i = 0; i < size; ++i) {
             wsolaPhaseA_ += phaseStep;
-            if (wsolaPhaseA_ >= 1.0f) wsolaPhaseA_ -= 1.0f;
+            wsolaPhaseA_ -= std::floor(wsolaPhaseA_);
             wsolaPhaseB_ = std::fmod(wsolaPhaseA_ + 0.5f, 1.0f);
 
             const float winA = 0.5f - 0.5f * std::cos(wsolaPhaseA_ * stmlib::kTwoPi);
             const float winB = 0.5f - 0.5f * std::cos(wsolaPhaseB_ * stmlib::kTwoPi);
 
-            const float dA = baseDelay + ((pitchRatio > 1.0f) ? (1.0f - wsolaPhaseA_) : wsolaPhaseA_) * winSamples;
-            const float dB = baseDelay + ((pitchRatio > 1.0f) ? (1.0f - wsolaPhaseB_) : wsolaPhaseB_) * winSamples;
+            const float dA = baseDelay + wsolaPhaseA_ * winSamples;
+            const float dB = baseDelay + wsolaPhaseB_ * winSamples;
 
             const double idxA = static_cast<double>(writePtr_ + kBufferSamples) - dA;
             const double idxB = static_cast<double>(writePtr_ + kBufferSamples) - dB;
@@ -342,15 +346,23 @@ private:
 
     void processLoopingDelay(bool freeze, float pos, float sz, float pitchRatio, float /*dens*/, float tex,
                              float fb, float sprd, const float* inL, const float* inR, float* wetL, float* wetR, size_t size) noexcept {
-        const float loopLen = (0.04f + sz * 1.8f) * sampleRate_ / std::max(0.25f, pitchRatio);
-        const float startOffset = (0.01f + pos * 1.5f) * sampleRate_;
+        // Each pass replays the latest `loopLen` of sound, ending `startOffset` ago, at `ratio` speed
+        // (1 = original pitch). The segment is re-anchored at the start of every pass, so the loop
+        // follows the music - or holds still when the memory is frozen.
+        const double loopLen = (0.04 + sz * 1.8) * sampleRate_;
+        const double startOffset = (0.01 + pos * 1.5) * sampleRate_;
 
         for (size_t i = 0; i < size; ++i) {
-            wsolaPhaseA_ += pitchRatio / loopLen;
-            if (wsolaPhaseA_ >= 1.0f) wsolaPhaseA_ -= 1.0f;
+            wsolaPhaseA_ += static_cast<float>(pitchRatio / loopLen);
+            if (wsolaPhaseA_ >= 1.0f) {
+                wsolaPhaseA_ -= std::floor(wsolaPhaseA_);
+                loopAnchor_ = static_cast<double>(writePtr_) - startOffset - loopLen;
+            }
 
-            const float readDelay = startOffset + (1.0f - wsolaPhaseA_) * loopLen;
-            const double idxL = static_cast<double>(writePtr_ + kBufferSamples) - readDelay;
+            const double readPos = loopAnchor_ + wsolaPhaseA_ * loopLen;
+            const float readDelay = static_cast<float>(std::fmod(static_cast<double>(writePtr_) - readPos + 4.0 * kBufferSamples,
+                                                                 static_cast<double>(kBufferSamples)));
+            const double idxL = readPos + 2.0 * kBufferSamples;
             const double idxR = idxL - sprd * 320.0;
             constexpr auto mask = static_cast<int32_t>(kBufferMask);
 
@@ -443,6 +455,7 @@ private:
     float grainSpawnCounter_ = 0.0f;
     float wsolaPhaseA_ = 0.0f;
     float wsolaPhaseB_ = 0.5f;
+    double loopAnchor_ = 0.0;
 
     stmlib::Random rng_;
     stmlib::DiffusionReverb reverb_;

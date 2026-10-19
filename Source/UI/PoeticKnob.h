@@ -48,7 +48,10 @@ public:
         slider_.getProperties().set("knobTier", static_cast<int>(tier_));
         slider_.onValueChange = [this]() { repaint(); };
         slider_.interceptor = [this](const juce::MouseEvent& e, int phase) { return interceptMouse(e, phase); };
-        slider_.onHoverChanged = [this]() { repaint(); };
+        slider_.onHoverChanged = [this](bool over) {
+            hovered_ = over;
+            repaint();
+        };
         addAndMakeVisible(slider_);
 
         attachment_ = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, paramId, slider_);
@@ -71,9 +74,22 @@ public:
     void setDimmed(bool dimmed) {
         if (dimmed_ == dimmed) return;
         dimmed_ = dimmed;
-        slider_.getProperties().set("dimmed", dimmed);
+        updateDimming();
+    }
+
+    // What this dial means right now (it changes with the voice model, resonator model or cloud mode)
+    void setRole(const juce::String& label, const juce::String& tooltip, bool used = true) {
+        if (labelText_ == label && unused_ == !used && slider_.getTooltip() == tooltip) return;
+        labelText_ = label;
+        unused_ = !used;
+        slider_.setTooltip(tooltip);
+        updateDimming();
+    }
+
+    // Touch mode: a slow rose pulse so it is impossible to forget it is on
+    void setAssignPulse(float pulse) {
+        slider_.getProperties().set("assignPulse", pulse);
         slider_.repaint();
-        repaint();
     }
 
     // The dial whose tides are listed in the routing column
@@ -164,22 +180,24 @@ public:
 
     void paint(juce::Graphics& g) override {
         auto labelArea = getLocalBounds().removeFromBottom(labelHeight());
-        const bool hovered = slider_.isMouseOverOrDragging() || isMouseOver(true);
+        const bool hovered = hovered_ || slider_.isMouseButtonDown() || isDraggingModDepth_;
 
         // Assigning a tide: show its depth
         if (activeAssignSource_.has_value() && modDest_.has_value() && modMatrix_) {
             const float amt = modMatrix_->getConnectionAmount(*activeAssignSource_, *modDest_);
             const int pct = static_cast<int>(std::round(amt * 100.0f));
-            if (pct != 0 || isDraggingModDepth_ || hovered) {
-                g.setColour(Palette::kRose);
-                g.setFont(Fonts::serif(tier_ == KnobTier::Hero ? 14.0f : 12.5f, true));
-                g.drawFittedText((pct > 0 ? "+" : "") + juce::String(pct) + "%", labelArea, juce::Justification::centredTop, 1);
+            if (!unused_) {
+                // name and depth together, so the dials stay recognisable
+                g.setColour(pct != 0 || hovered ? Palette::kRose : Palette::kRose.withAlpha(0.6f));
+                g.setFont(Fonts::caps(tier_ == KnobTier::Hero ? 10.0f : 9.0f, true));
+                g.drawFittedText(labelText_.toUpperCase() + "  " + (pct > 0 ? "+" : "") + juce::String(pct) + "%",
+                                 labelArea, juce::Justification::centredTop, 1);
                 return;
             }
         }
 
         // Hover / drag: the value, in the poetic voice
-        if (hovered && !dimmed_) {
+        if (hovered && !dimmed_ && !unused_) {
             g.setColour(Palette::kMoon);
             g.setFont(Fonts::serif(tier_ == KnobTier::Hero ? 14.0f : 12.5f, true));
             juce::String valStr = (apvts_.getParameter(paramId_) != nullptr)
@@ -189,7 +207,7 @@ public:
             return;
         }
 
-        g.setColour(dimmed_ ? Palette::kAsh : (tier_ == KnobTier::Hero ? Palette::kMoon.withAlpha(0.88f) : Palette::kMist));
+        g.setColour((dimmed_ || unused_) ? Palette::kAsh : (tier_ == KnobTier::Hero ? Palette::kMoon.withAlpha(0.88f) : Palette::kMist));
         g.setFont(Fonts::caps(tier_ == KnobTier::Hero ? 10.0f : 9.0f, tier_ == KnobTier::Hero));
         juce::String text = labelText_.toUpperCase();
         if (mappedCC_ >= 0) text += "  CC" + juce::String(mappedCC_);
@@ -201,15 +219,21 @@ private:
     class KnobSlider : public juce::Slider {
     public:
         std::function<bool(const juce::MouseEvent&, int)> interceptor; // phase: 0 down, 1 drag, 2 up, 3 double
-        std::function<void()> onHoverChanged;
+        std::function<void(bool)> onHoverChanged;
 
         void mouseDown(const juce::MouseEvent& e) override { if (!(interceptor && interceptor(e, 0))) Slider::mouseDown(e); }
         void mouseDrag(const juce::MouseEvent& e) override { if (!(interceptor && interceptor(e, 1))) Slider::mouseDrag(e); }
         void mouseUp(const juce::MouseEvent& e) override { if (!(interceptor && interceptor(e, 2))) Slider::mouseUp(e); }
         void mouseDoubleClick(const juce::MouseEvent& e) override { if (!(interceptor && interceptor(e, 3))) Slider::mouseDoubleClick(e); }
-        void mouseEnter(const juce::MouseEvent& e) override { Slider::mouseEnter(e); if (onHoverChanged) onHoverChanged(); }
-        void mouseExit(const juce::MouseEvent& e) override { Slider::mouseExit(e); if (onHoverChanged) onHoverChanged(); }
+        void mouseEnter(const juce::MouseEvent& e) override { Slider::mouseEnter(e); if (onHoverChanged) onHoverChanged(true); }
+        void mouseExit(const juce::MouseEvent& e) override { Slider::mouseExit(e); if (onHoverChanged) onHoverChanged(false); }
     };
+
+    void updateDimming() {
+        slider_.getProperties().set("dimmed", dimmed_ || unused_);
+        slider_.repaint();
+        repaint();
+    }
 
     int labelHeight() const noexcept { return tier_ == KnobTier::Hero ? 20 : 17; }
 
@@ -348,6 +372,8 @@ private:
     bool hasRouting_ = false;
     bool bipolar_ = false;
     bool dimmed_ = false;
+    bool unused_ = false;
+    bool hovered_ = false;
     float dragStartModDepth_ = 0.0f;
     int mappedCC_ = -1;
 

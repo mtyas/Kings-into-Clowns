@@ -55,6 +55,16 @@ public:
         };
         addAndMakeVisible(deleteBtn_);
 
+        initBtn_.setButtonText("Init");
+        initBtn_.setColour(juce::TextButton::buttonOnColourId, Palette::kGold);
+        initBtn_.setTooltip("Start from a blank page: a plain voice into one string, no modulation");
+        initBtn_.onClick = [this]() {
+            presetManager_.loadInit();
+            rebuildFilteredList();
+            if (onPresetChanged_) onPresetChanged_();
+        };
+        addAndMakeVisible(initBtn_);
+
         importBtn_.setButtonText("Import");
         importBtn_.onClick = [this]() { importPreset(); };
         addAndMakeVisible(importBtn_);
@@ -100,6 +110,8 @@ public:
         }
 
         auto io = left.removeFromBottom(28);
+        left.removeFromBottom(8);
+        initBtn_.setBounds(left.removeFromBottom(28));
         importBtn_.setBounds(io.removeFromLeft(io.getWidth() / 2 - 4));
         io.removeFromLeft(8);
         exportBtn_.setBounds(io);
@@ -321,6 +333,7 @@ private:
     juce::TextEditor poemEditor_;
     juce::TextButton saveBtn_;
     juce::TextButton deleteBtn_;
+    juce::TextButton initBtn_;
     juce::TextButton importBtn_;
     juce::TextButton exportBtn_;
     juce::TextButton closeBtn_;

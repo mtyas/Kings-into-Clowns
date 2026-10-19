@@ -111,31 +111,36 @@ the more motes. When the Loom plays, shooting stars cross the breath.
 
 ![The three stages](images/stages.png)
 
-**Voice model** (left menu) — twelve ways to breathe:
+**The dials change their names with the model.** Harmonics, Timbre and Morph mean something
+different in each voice model, and in each body and cloud mode, so the labels and tooltips under
+the dials follow whatever is selected. A dial that does nothing in the current mode greys out and
+reads *Unused*.
 
-| Model | Character |
-|---|---|
-| Virtual Analog | detuned saw and variable pulse |
-| Buchla Wavefolder | west-coast folding |
-| Two-Operator FM | bells, metals, feedback growl |
-| Vowel & Formant | speech-like formants |
-| 24-Harmonic Additive | organ-like spectra |
-| Wavetable Matrix | 2-D morphing waves |
-| Solina String Ensemble | chords and divide-down strings |
-| Formant Swarm Cloud | a swarm of detuned formants |
-| Filtered Clocked Noise | pitched dust and noise |
-| Bowed Particle Friction | a continuous bow — wonderful into strings |
-| Karplus-Strong Pluck | a plucked string |
-| Modal Mallet Strike | a short woody/metal strike |
+![The dial names follow the selected models and mode](images/stages-dynamic.png)
+
+**Voice model** (left menu) — what the three large dials become:
+
+| Model | Harmonics → | Timbre → | Morph → |
+|---|---|---|---|
+| Virtual Analog | **Detune** — second oscillator, up to a fifth | **Saw / Pulse** | **Pulse Width** |
+| Buchla Wavefolder | **Sine / Tri** — the folded wave | **Fold** — drive into the folder | **Symmetry** |
+| Two-Operator FM | **Ratio** of the modulator | **Index** — FM depth, grows with each strike | **Feedback** — clean in the centre |
+| Vowel & Formant | **Formant 1** | **Formant 2** | **Narrowness** — round to buzzy |
+| 24-Harmonic Additive | **Even / Odd** balance | **Centre** partial | **Focus** — narrows the spectrum |
+| Wavetable Matrix | **Row** | **Column** | **Warp** — phase distortion |
+| Solina String Ensemble | **Chord** — octave … phrygian | **Inversion** | **Waveform** — sine organ to saw strings |
+| Formant Swarm Cloud | **Spread** of the swarm | **Formant** | **Noise** |
+| Filtered Clocked Noise | **Clocked** — white to stepped | **Clock** — rate and filter | **Resonance** |
+| Bowed Particle Friction | **Scatter** of particle pitch | **Particles** — density | **Bow** — steady bow and resonance |
+| Karplus-Strong Pluck | **Burst** — noise that plucks | **Brightness** | **Sustain** |
+| Modal Mallet Strike | **Overtone** — second partial | **Click** | **Body** — sustained body tone |
 
 **Source** (right menu): *Inner voice* (the oscillator), *Outer audio* (your track's audio
-excites the body — see [Using it as an effect](#using-it-as-an-effect)), or *Voice + audio*.
+excites the body — the voice dials grey out, see [Using it as an effect](#using-it-as-an-effect)),
+or *Voice + audio*.
 
 | Dial | What it does |
 |---|---|
-| **Harmonics** | Which overtones the voice remembers (model-dependent: detune, ratio, chord, partial balance…). |
-| **Timbre** | The brightness of the breath. |
-| **Morph** | How the voice changes its shape (pulse width, fold symmetry, feedback…). |
 | **Tune** | Transposes the voice, ±24 semitones. |
 | **Sub** | A lower, slightly crunchy shadow an octave beneath the voice. |
 | **Strike** | How hard the internal mallet strikes the body on each note. |
@@ -143,60 +148,55 @@ excites the body — see [Using it as an effect](#using-it-as-an-effect)), or *V
 
 The voice passes through a low-pass gate that follows **ENV 1**, like a vactrol.
 
+> **Tip:** a voice tuned to the same note as the body (a saw or a bowed tone into a string)
+> drives the body hard. Use *Strike*-like voices (Mallet, Karplus-Strong, Particles) for clean
+> plucks, and lower *Out* for dense chords of sustained tones.
+
 ---
 
 ## II · the body — resonator
 
-**Resonator model** (left menu):
+**Resonator model** (left menu) — what the dials become:
 
-| Model | Character |
-|---|---|
-| Modal Resonator | 24 modes: bars, plates, bells, glass. |
-| Sympathetic Strings | coupled strings sharing a bridge — koto, sitar. |
-| Inharmonic Dispersion String | a stiff string; at high *Structure* its pitch bends with its own energy. |
-| FM Follower Resonator | an FM voice that follows the loudness of what excites it. |
-| Sympathetic Quantized Chords | four strings tuned to chords chosen by *Structure*. |
-| String & Cavern Reverb | dispersion strings inside their own cave. |
+| Model | Structure → | Brightness → | Damping → | Position → |
+|---|---|---|---|---|
+| Modal Resonator — bars, plates, bells, glass | **Inharmonic** — harmonic to bell partials | **Brightness** | **Decay** | **Strike Point** |
+| Sympathetic Strings — koto, sitar | **Intervals** — octaves, fifths, chords | **Brightness** | **Decay** | **Pickup** |
+| Inharmonic Dispersion String | **Dispersion** — stiffness and detune; past the middle, pitch bends with energy | **Brightness** | **Decay** | **Pickup** |
+| FM Follower Resonator | **Ratio** | **Index** | **Decay** — how long it follows the exciter | **Feedback** |
+| Sympathetic Quantized Chords | **Chord** | **Brightness** | **Decay** | **Pickup** |
+| String & Cavern Reverb | **Dispersion** | **Brightness** (and the cave's tone) | **Decay** (and the cave's size) | **Space** — pickup and how much cave |
 
 **Strings** (right menu): 1, 2 or 4 strings inside each voice (the sympathetic models use 2, 3 or 4).
-
-| Dial | What it does |
-|---|---|
-| **Structure** | Harmonic or inharmonic: string, bell, glass — or which chord / interval the strings form. |
-| **Brightness** | How much high light the body keeps. |
-| **Damping** | How long the body goes on ringing. |
-| **Position** | Where along the body it is struck (and where it is heard). |
-| **Tune** | Tunes the body against the note played, ±24 semitones. |
-
+**Tune** tunes the body against the note played, ±24 semitones.
 **Strum** plucks the body without a keyboard (as does clicking the rings on the canvas).
+
+The "Damping" dial is shown as **Decay** because turning it up makes the body ring *longer*.
 
 ---
 
 ## III · the sky — clouds & space
 
-**Cloud mode**:
+**Cloud mode** — what happens, and what the dials become:
 
-| Mode | What happens |
-|---|---|
-| Granular Texture | grains taken from the last ~3 seconds — the classic cloud. |
-| Pitch Shifter / Time Stretch | two crossfading windows that shift pitch without changing time. |
-| Looping Tap Delay | a loop read from the memory — beat-repeats and echoes. |
-| Spectral Phase Warp | granular, then through a shifting bank of resonant bands. |
+| Mode | Position → | Size → | Density → | Texture → | Pitch → | Feedback → |
+|---|---|---|---|---|---|---|
+| **Granular Texture** — grains from the last ~3 s | **Position** — how far back | **Size** — 15–650 ms grains | **Density** | **Texture** — grain edges, diffusion | **Pitch** | **Feedback** |
+| **Pitch Shifter / Time Stretch** — two crossfading windows | **Delay** — 10 ms–1.2 s behind | **Window** — grainy to smooth | *Unused* | **Diffusion** | **Pitch** — transposition only | **Feedback** — rising/falling spirals |
+| **Looping Tap Delay** — replays the latest segment | **Delay** — loop ends 10 ms–1.5 s ago | **Loop** — 40 ms–1.8 s | *Unused* | **Smoothness** — hard cuts to swells | **Speed** — tape-style | **Repeats** — crossing left/right |
+| **Spectral Phase Warp** — granular, then resonant bands | **Position** (also shifts the bands) | **Size** (also odd/even band balance) | **Density** | **Resonance** of the bands | **Pitch** | **Feedback** |
+
+**Density** (granular modes): sparse at the centre; turning left gives regular, clocked grains,
+turning right dense and scattered ones.
 
 | Dial | What it does |
 |---|---|
-| **Position** | How far back in time the grains listen (0 = now, full = ~3 s ago). |
-| **Size** | Grain length, 15 ms to 650 ms (window size / loop length in the other modes). |
-| **Density** | At the centre, sparse. Turning left: regular, clocked grains. Turning right: dense and scattered. |
-| **Texture** | The softness of each grain's edge (boxcar → triangle → bell), and the reverb's diffusion. |
-| **Pitch** | Transposes the cloud, ±24 semitones. |
-| **Feedback** | Feeds the cloud back into its own memory. |
 | **Reverb** | The size of the space around it all. |
 | **Mix** | From the bare body to the whole sky (equal-power). |
 | **Width** | How wide the cloud spreads in stereo. |
 
 **Freeze** stops the memory from recording: the last seconds are held, and the grains keep
-playing inside them. Combine with **Position** and **Size** — or drag across the frozen sky.
+playing inside them. In the looping delay, Freeze holds the loop itself.
 
 ---
 
@@ -219,8 +219,12 @@ The small dots on a chip count how many dials it moves.
 
 - **Drag** a chip onto any glowing dial (the dial's rim turns rose as you hover).
   It connects at +30 %.
-- Or select a chip, press **Touch**, and drag any dial up or down to set how far this tide moves it
-  (double-click a dial to disconnect it). Press **Touch** again to return to normal.
+- Or select a chip and press **Touch**: every dial this tide can reach glows and pulses in rose,
+  the stages are framed in rose, and each dial shows its name with the current depth
+  (*RATIO +30%*). Drag any dial up or down to set how far the tide moves it; double-click a dial to
+  disconnect it. A rose banner reminds you Touch is on — press **Touch** again to finish.
+
+![Touch mode](images/touch-mode-crop.png)
 - Or right-click a dial → **Tides** → choose a source and a depth.
 
 Pitch dials (*Tune*, *Pitch*) are scaled so that 100 % = ±24 semitones.
@@ -294,7 +298,7 @@ held, it plays its own short notes around middle C. Its melody is also a modulat
 | Drag up/down | Change the value. Hold **Shift** for velocity-sensitive dragging (move slowly for fine steps). |
 | Double-click | Return to the default. |
 | Mouse wheel | Nudge. |
-| Hover | Shows the value in place of the label. |
+| Hover | Shows the value in place of the label; the name returns as soon as the pointer leaves. |
 | Click | Lists the tides moving this dial in the right-hand column. |
 | Right-click | Menu: return to default, learn / forget a MIDI CC, connect any tide at ±10/25/50 %, still all tides on this dial. |
 | Drop a tide | Connects that tide. |
@@ -311,7 +315,11 @@ value right now; the gold arc joins it to the dial's own setting.
 Open it by clicking the patch name. Categories on the left come from the patches themselves;
 the search field finds words in names, categories *and* lines of verse.
 
+- **Init** starts from a blank page: a plain mallet strike on one string, a light cloud, every
+  tide disconnected. It is not in the patch list; ‹ › from Init go to the first / last patch.
 - **Click** a patch to hear it, **double-click** (or press Enter) to choose it and close.
+
+![Init](images/init.png)
 - **Keep** saves the current sound as a new patch — give it a name and, if you like, a line of verse.
 - **Let go** deletes the selected patch (your own patches only).
 - **Import / Export** share `.kicpreset` files (older `.ricpreset` files load too).

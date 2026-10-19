@@ -198,8 +198,9 @@ private:
                 else              evenSum += modeOut;
             }
 
-            outOdd[i]  = oddSum * 1.35f;
-            outEven[i] = evenSum * 1.35f;
+            // +6 dB against the earlier balance: the modal bank sat well below the string models
+            outOdd[i]  = oddSum * 2.7f;
+            outEven[i] = evenSum * 2.7f;
         }
     }
 
@@ -243,24 +244,28 @@ private:
 
         for (size_t i = 0; i < size; ++i) {
             const float ex = in[i] * 0.5f;
-            float bridgeCoupling = 0.0f;
             std::array<float, kMaxStrings> stringOuts{};
 
+            // The bridge shares energy between the strings: each string's feedback is a blend of
+            // itself and the average of all of them. A blend cannot create energy, unlike the old
+            // additive coupling, which let strings tuned in octaves sustain themselves forever.
+            constexpr float kBridge = 0.06f;
+            float bridgeMean = 0.0f;
             for (size_t s = 0; s < numStrings; ++s) {
                 const float readIdx = static_cast<float>(stringWritePtr_[s]) - delays[s] + static_cast<float>(kStringDelaySize);
-                const float rawDelayed = stmlib::InterpolateHermite(stringDelays_[s].data(), readIdx, static_cast<int32_t>(kStringDelayMask));
-                stringOuts[s] = rawDelayed;
-                bridgeCoupling += rawDelayed;
+                stringOuts[s] = stmlib::InterpolateHermite(stringDelays_[s].data(), readIdx, static_cast<int32_t>(kStringDelayMask));
+                ONE_POLE(stringLpState_[s], stringOuts[s], lpCoeff);
+                bridgeMean += stringLpState_[s];
             }
-            bridgeCoupling *= (0.045f / static_cast<float>(numStrings));
+            bridgeMean /= static_cast<float>(numStrings);
 
             float oddSum = 0.0f;
             float evenSum = 0.0f;
 
             for (size_t s = 0; s < numStrings; ++s) {
-                ONE_POLE(stringLpState_[s], stringOuts[s], lpCoeff);
                 const float stringEx = (s == 0) ? ex : (ex * 0.35f);
-                const float nextVal = dcBlockers_[s].Process(stringLpState_[s] * gains[s] + stringEx + bridgeCoupling);
+                const float shared = stringLpState_[s] * (1.0f - kBridge) + bridgeMean * kBridge;
+                const float nextVal = dcBlockers_[s].Process(shared * gains[s] + stringEx);
 
                 const size_t wPtr = stringWritePtr_[s] & kStringDelayMask;
                 stringDelays_[s][wPtr] = stmlib::SoftLimit(nextVal);
@@ -286,7 +291,13 @@ private:
         const size_t numStrings = (polySelect == 0) ? 1 : (polySelect == 1 ? 2 : 4);
         const float t60Sec = 0.08f * std::pow(140.0f, damping);
         const float lpCoeff = 0.08f + brightness * 0.88f;
-        const float dispersionAmount = (structure - 0.5f) * 1.6f;
+        // Dispersion grows away from the centre of Structure. It is applied as a blend between the
+        // string and its all-pass version (x - 2d * bandpass), whose gain can never exceed 1, so the
+        // loop cannot feed itself. (Subtracting a negative amount used to boost the loop: below the
+        // centre the string self-oscillated and never died away.) The two halves differ in colour:
+        // the lower half disperses around a lower band.
+        const float dispersionAmount = std::min(std::abs(structure - 0.5f) * 1.6f, 0.8f);
+        const float dispersionBand = structure < 0.5f ? 1.2f : 2.5f;
 
         std::array<float, kMaxStrings> delays{};
         std::array<float, kMaxStrings> gains{};
@@ -296,7 +307,7 @@ private:
             const float fs = std::clamp(f0 * stmlib::SemitonesToRatio(detuneSemi), 0.0004f, 0.45f);
             delays[s] = std::clamp((1.0f / fs) - 1.0f, 4.0f, static_cast<float>(kStringDelaySize - 8));
             gains[s] = std::pow(0.001f, 1.0f / (fs * sampleRate_ * t60Sec));
-            dispersionSvf_[s].set_f_q(std::clamp(fs * (2.5f + std::abs(dispersionAmount) * 6.0f), 0.002f, 0.44f), 0.9f);
+            dispersionSvf_[s].set_f_q(std::clamp(fs * (dispersionBand + dispersionAmount * 6.0f), 0.002f, 0.44f), 0.9f);
         }
 
         const int combOffset = std::clamp(static_cast<int>(delays[0] * position * 0.5f), 1, 512);
@@ -316,7 +327,7 @@ private:
 
                 // All-pass dispersion approximation using SVF bandpass phase shift
                 const float bp = dispersionSvf_[s].Process<stmlib::FILTER_MODE_BAND_PASS_NORMALIZED>(delayed);
-                const float dispersed = delayed - bp * dispersionAmount;
+                const float dispersed = delayed - bp * dispersionAmount; // = x - 2d*bp with d <= 0.4
 
                 ONE_POLE(stringLpState_[s], dispersed, lpCoeff);
                 const float nextVal = dcBlockers_[s].Process(stringLpState_[s] * gains[s] + ex);

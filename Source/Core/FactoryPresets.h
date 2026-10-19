@@ -15,6 +15,38 @@ struct FactoryPreset {
     juce::File userFile{};
 };
 
+// A blank page: one plain voice into one string, a light cloud, nothing moving.
+// Parameters it does not mention take their defaults; it carries no modulation at all.
+inline FactoryPreset getInitPreset() {
+    using namespace ric::params::ID;
+    return {
+        "Init",
+        "Init",
+        "A blank page.",
+        {
+            { exciterBypass, 0.0f }, { ringsBypass, 0.0f }, { cloudsBypass, 0.0f },
+            { inputSource, 0.0f }, { oscEngine, 11.0f }, { oscTune, 0.0f },
+            { oscHarmonics, 0.3f }, { oscTimbre, 0.5f }, { oscMorph, 0.0f },
+            { subBlend, 0.0f }, { strikeLevel, 0.5f }, { directMix, 0.0f },
+            { ringsModel, 2.0f }, { ringsPoly, 0.0f },
+            { ringsStructure, 0.25f }, { ringsBrightness, 0.5f }, { ringsDamping, 0.6f }, { ringsPosition, 0.3f }, { ringsTune, 0.0f },
+            { cloudsMode, 0.0f }, { cloudsFreeze, 0.0f },
+            { cloudsPosition, 0.2f }, { cloudsSize, 0.5f }, { cloudsDensity, 0.7f }, { cloudsTexture, 0.5f },
+            { cloudsPitch, 0.0f }, { cloudsFeedback, 0.0f }, { cloudsReverb, 0.3f }, { cloudsDryWet, 0.2f }, { cloudsSpread, 0.5f },
+            { lfo1Rate, 0.5f }, { lfo1Shape, 0.0f }, { lfo2Rate, 0.5f }, { lfo2Shape, 0.0f }, { lfo3Rate, 0.5f }, { lfo3Shape, 0.0f },
+            { lfo1Sync, 0.0f }, { lfo2Sync, 0.0f }, { lfo3Sync, 0.0f },
+            { env1Attack, 0.005f }, { env1Decay, 0.6f }, { env1Sustain, 0.7f }, { env1Release, 0.6f },
+            { env2Attack, 0.005f }, { env2Decay, 0.6f }, { env2Sustain, 0.0f }, { env2Release, 0.6f },
+            { env3Attack, 0.005f }, { env3Decay, 0.6f }, { env3Sustain, 0.0f }, { env3Release, 0.6f },
+            { marblesEnable, 0.0f }, { marblesTempoSync, 1.0f }, { marblesDivision, 4.0f }, { marblesRate, 2.0f },
+            { marblesDejaVu, 0.5f }, { marblesSpread, 0.5f }, { marblesSteps, 0.75f }, { marblesLength, 8.0f },
+            { marblesJitter, 0.0f }, { marblesPitchTarget, 1.0f },
+            { polyphonyMode, 2.0f }, { masterGain, 0.0f }
+        },
+        true, {}
+    };
+}
+
 inline std::vector<FactoryPreset> getFactoryPresets() {
     using namespace ric::params::ID;
     return {
@@ -38,7 +70,7 @@ inline std::vector<FactoryPreset> getFactoryPresets() {
                 { env3Attack, 0.350f }, { env3Decay, 2.5f }, { env3Sustain, 0.60f }, { env3Release, 4.0f },
                 { marblesEnable, 0.0f }, { marblesTempoSync, 1.0f }, { marblesDivision, 4.0f }, { marblesRate, 2.5f },
                 { marblesDejaVu, 0.50f }, { marblesSpread, 0.45f }, { marblesSteps, 0.75f },
-                { polyphonyMode, 2.0f }, { masterGain, 0.0f }
+                { polyphonyMode, 2.0f }, { masterGain, -3.5f }
             },
             true, {}
         },
@@ -62,7 +94,7 @@ inline std::vector<FactoryPreset> getFactoryPresets() {
                 { env3Attack, 0.500f }, { env3Decay, 3.0f }, { env3Sustain, 0.70f }, { env3Release, 4.8f },
                 { marblesEnable, 0.0f }, { marblesTempoSync, 1.0f }, { marblesDivision, 2.0f }, { marblesRate, 1.8f },
                 { marblesDejaVu, 0.50f }, { marblesSpread, 0.55f }, { marblesSteps, 0.85f },
-                { polyphonyMode, 2.0f }, { masterGain, 0.0f }
+                { polyphonyMode, 2.0f }, { masterGain, 3.5f }
             },
             true, {}
         },
@@ -86,7 +118,7 @@ inline std::vector<FactoryPreset> getFactoryPresets() {
                 { env3Attack, 0.100f }, { env3Decay, 1.8f }, { env3Sustain, 0.50f }, { env3Release, 2.5f },
                 { marblesEnable, 1.0f }, { marblesTempoSync, 1.0f }, { marblesDivision, 4.0f }, { marblesRate, 4.2f },
                 { marblesDejaVu, 0.52f }, { marblesSpread, 0.62f }, { marblesSteps, 0.88f },
-                { polyphonyMode, 2.0f }, { masterGain, 0.0f }
+                { polyphonyMode, 2.0f }, { masterGain, 0.5f }
             },
             true, {}
         },
@@ -110,7 +142,7 @@ inline std::vector<FactoryPreset> getFactoryPresets() {
                 { env3Attack, 1.200f }, { env3Decay, 4.0f }, { env3Sustain, 0.75f }, { env3Release, 5.0f },
                 { marblesEnable, 0.0f }, { marblesTempoSync, 0.0f }, { marblesDivision, 2.0f }, { marblesRate, 1.5f },
                 { marblesDejaVu, 0.45f }, { marblesSpread, 0.30f }, { marblesSteps, 0.40f },
-                { polyphonyMode, 2.0f }, { masterGain, 0.0f }
+                { polyphonyMode, 2.0f }, { masterGain, -2.5f }
             },
             true, {}
         },
@@ -134,7 +166,7 @@ inline std::vector<FactoryPreset> getFactoryPresets() {
                 { env3Attack, 0.200f }, { env3Decay, 2.0f }, { env3Sustain, 0.50f }, { env3Release, 3.0f },
                 { marblesEnable, 0.0f }, { marblesTempoSync, 1.0f }, { marblesDivision, 4.0f }, { marblesRate, 3.0f },
                 { marblesDejaVu, 0.50f }, { marblesSpread, 0.50f }, { marblesSteps, 0.70f },
-                { polyphonyMode, 3.0f }, { masterGain, 0.0f }
+                { polyphonyMode, 3.0f }, { masterGain, -8.0f }
             },
             true, {}
         },
@@ -158,7 +190,7 @@ inline std::vector<FactoryPreset> getFactoryPresets() {
                 { env3Attack, 0.800f }, { env3Decay, 3.5f }, { env3Sustain, 0.65f }, { env3Release, 4.5f },
                 { marblesEnable, 0.0f }, { marblesTempoSync, 0.0f }, { marblesDivision, 2.0f }, { marblesRate, 2.0f },
                 { marblesDejaVu, 0.48f }, { marblesSpread, 0.68f }, { marblesSteps, 0.30f },
-                { polyphonyMode, 2.0f }, { masterGain, 0.0f }
+                { polyphonyMode, 2.0f }, { masterGain, 6.0f }
             },
             true, {}
         },
@@ -206,7 +238,7 @@ inline std::vector<FactoryPreset> getFactoryPresets() {
                 { env3Attack, 0.050f }, { env3Decay, 1.5f }, { env3Sustain, 0.40f }, { env3Release, 2.0f },
                 { marblesEnable, 0.0f }, { marblesTempoSync, 1.0f }, { marblesDivision, 4.0f }, { marblesRate, 3.0f },
                 { marblesDejaVu, 0.50f }, { marblesSpread, 0.45f }, { marblesSteps, 0.80f },
-                { polyphonyMode, 3.0f }, { masterGain, 0.0f }
+                { polyphonyMode, 3.0f }, { masterGain, -2.0f }
             },
             true, {}
         }

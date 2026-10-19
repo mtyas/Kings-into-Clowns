@@ -203,10 +203,14 @@ void PoeticLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int wi
     }
 
     // 5. Modulation assignment: the selected tide's depth as an inner rose arc
-    if (isAssignTarget) {
+    if (isAssignTarget && !dimmed) {
+        const float pulse = props.getWithDefault("assignPulse", 0.5f);
+        Draw::glow(g, centre, radius, Palette::kRose, 0.18f + 0.22f * pulse + (hovered ? 0.2f : 0.0f));
+        g.setColour(Palette::kRose.withAlpha(0.45f + 0.45f * pulse));
+        g.drawEllipse(centre.x - radius * 0.985f, centre.y - radius * 0.985f, radius * 1.97f, radius * 1.97f, 1.6f);
         const float innerR = radius * 0.71f;
-        g.setColour(Palette::kRose.withAlpha(hovered ? 0.55f : 0.28f));
-        g.drawEllipse(centre.x - innerR, centre.y - innerR, innerR * 2.0f, innerR * 2.0f, 1.0f);
+        g.setColour(Palette::kRose.withAlpha(hovered ? 0.8f : 0.5f));
+        g.drawEllipse(centre.x - innerR, centre.y - innerR, innerR * 2.0f, innerR * 2.0f, 1.2f);
         const float depth = props.getWithDefault("assignDepth", 0.0f);
         if (std::abs(depth) > 0.004f) {
             const float targetAngle = rotaryStartAngle + std::clamp(sliderPos + depth, 0.0f, 1.0f) * span;

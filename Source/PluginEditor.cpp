@@ -6,6 +6,7 @@
 #include "UI/PresetBrowserModal.h"
 #include "UI/AboutOverlay.h"
 #include "UI/Widgets.h"
+#include "UI/KnobRoles.h"
 #include <array>
 #include <optional>
 #include <vector>
@@ -128,6 +129,8 @@ public:
             // choosing a tide returns the routing column to "where it flows"
             if (inspectedKnob_ != nullptr) { inspectedKnob_->setInspected(false); inspectedKnob_ = nullptr; }
             for (auto* k : allKnobs_) k->setActiveModAssignSource(src);
+            touchSource_ = src;
+            repaint();
         };
         tides_.onRoutingChanged = [this]() { refreshAllBadges(); };
         addAndMakeVisible(tides_);
@@ -173,6 +176,10 @@ public:
         for (int i = 0; i < 3; ++i) {
             const auto r = stageBounds(i).toFloat();
             Draw::card(g, r, 16.0f, bypassed[i] ? 0.6f : 1.0f);
+            if (touchSource_.has_value()) {
+                g.setColour(Palette::kRose.withAlpha(0.65f));
+                g.drawRoundedRectangle(r.reduced(0.5f), 16.0f, 1.6f);
+            }
             const auto& s = stages[i];
             const auto col = bypassed[i] ? Palette::kAsh : s.c;
             g.setColour(col);
@@ -375,6 +382,15 @@ private:
         canvas_.advance(snapshot_, dt);
         repaint(1196, 14, 16, 38);
 
+        applyKnobRoles();
+
+        // Touch mode: every dial the tide can reach breathes in rose
+        if (touchSource_.has_value()) {
+            const float pulse = 0.5f + 0.5f * std::sin(static_cast<float>(now * 0.0045));
+            for (auto* k : modulatableKnobs_)
+                if (k != nullptr) k->setAssignPulse(pulse);
+        }
+
         // Dim the dials of a resting stage
         const bool bypassed[3] = { exciterPower_.getToggleState(), ringsPower_.getToggleState(), cloudsPower_.getToggleState() };
         for (int i = 0; i < 3; ++i)
@@ -435,6 +451,35 @@ private:
     std::array<PoeticKnob*, ric::mod::ModMatrix::kNumDests> modulatableKnobs_{};
     std::vector<PoeticKnob*> allKnobs_;
     PoeticKnob* inspectedKnob_ = nullptr;
+    std::optional<ric::mod::Source> touchSource_;
+    std::array<int, 4> lastRoleKeys_ { -1, -1, -1, -1 };
+
+    // Names and tooltips follow the selected voice model, resonator model and cloud mode
+    void applyKnobRoles() {
+        auto& apvts = processor_.getAPVTS();
+        auto read = [&apvts](const char* id) { return static_cast<int>(apvts.getRawParameterValue(id)->load()); };
+        const std::array<int, 4> keys { read(ric::params::ID::oscEngine), read(ric::params::ID::ringsModel),
+                                        read(ric::params::ID::cloudsMode), read(ric::params::ID::inputSource) };
+        if (keys == lastRoleKeys_) return;
+        lastRoleKeys_ = keys;
+
+        const auto& voice = Roles::kVoice[static_cast<size_t>(std::clamp(keys[0], 0, 11))];
+        const bool outerOnly = keys[3] == 1; // only the track's audio: the inner voice is silent
+        for (size_t i = 0; i < voice.size(); ++i) {
+            if (outerOnly) stageKnobs_[0][i]->setRole(voice[i].label, "The inner voice is silent while the source is outer audio", false);
+            else           stageKnobs_[0][i]->setRole(voice[i].label, voice[i].tooltip, voice[i].used);
+        }
+        stageKnobs_[0][3]->setRole("Tune", outerOnly ? "The inner voice is silent while the source is outer audio"
+                                                     : "Transpose the voice, in semitones", !outerOnly);
+        stageKnobs_[0][4]->setRole("Sub", outerOnly ? "The inner voice is silent while the source is outer audio"
+                                                    : "A lower shadow beneath the voice", !outerOnly);
+
+        const auto& body = Roles::kBody[static_cast<size_t>(std::clamp(keys[1], 0, 5))];
+        for (size_t i = 0; i < body.size(); ++i) stageKnobs_[1][i]->setRole(body[i].label, body[i].tooltip, body[i].used);
+
+        const auto& sky = Roles::kSky[static_cast<size_t>(std::clamp(keys[2], 0, 3))];
+        for (size_t i = 0; i < sky.size(); ++i) stageKnobs_[2][i]->setRole(sky[i].label, sky[i].tooltip, sky[i].used);
+    }
 
     TidesPanel tides_;
     PresetBrowserModal presetBrowser_;
