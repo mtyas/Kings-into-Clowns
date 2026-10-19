@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" font-family="Georgia, serif">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#070913"/>
+      <stop offset="1" stop-color="#1b1934"/>
+    </linearGradient>
+    <radialGradient id="ember" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f6d98f" stop-opacity="0.9"/>
+      <stop offset="0.4" stop-color="#e9765f" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#e9765f" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="jade" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#6fd6bb" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#6fd6bb" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pearl" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#9ec6ff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#9ec6ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="flow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f3a66f"/>
+      <stop offset="0.5" stop-color="#6fd6bb"/>
+      <stop offset="1" stop-color="#9ec6ff"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f6d98f"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="520" rx="22" fill="url(#sky)"/>
+  <g fill="#f1ebdd" opacity="0.5">
+    <circle cx="80" cy="40" r="1.2"/><circle cx="260" cy="70" r="0.9"/><circle cx="410" cy="32" r="1.4"/>
+    <circle cx="610" cy="58" r="1"/><circle cx="790" cy="28" r="1.3"/><circle cx="960" cy="62" r="0.9"/>
+    <circle cx="1120" cy="36" r="1.2"/><circle cx="1010" cy="110" r="0.8"/><circle cx="170" cy="120" r="0.8"/>
+  </g>
+
+  <!-- the flow -->
+  <path d="M 230 250 Q 415 150 600 250 Q 785 350 960 250" fill="none" stroke="url(#flow)" stroke-width="2.5" stroke-dasharray="2 9" stroke-linecap="round" opacity="0.9"/>
+
+  <!-- I. the breath -->
+  <circle cx="200" cy="250" r="120" fill="url(#ember)"/>
+  <path d="M200,190 C236,186 262,214 258,246 C262,282 232,312 200,308 C164,314 140,286 144,250 C138,214 166,192 200,190 Z" fill="#f3a66f" fill-opacity="0.15" stroke="#f3a66f" stroke-width="2"/>
+  <circle cx="200" cy="250" r="4" fill="#f1ebdd"/>
+  <text x="200" y="110" text-anchor="middle" fill="#f3a66f" font-size="16">I</text>
+  <text x="200" y="135" text-anchor="middle" fill="#f1ebdd" font-size="24" font-style="italic">the breath</text>
+  <text x="200" y="400" text-anchor="middle" fill="#b4b1c8" font-size="15" font-family="Segoe UI, Helvetica, sans-serif" letter-spacing="2">VOICE &amp; EXCITER</text>
+  <text x="200" y="424" text-anchor="middle" fill="#6e6c88" font-size="14" font-style="italic">12 macro voices · sub · mallet</text>
+  <text x="200" y="446" text-anchor="middle" fill="#6e6c88" font-size="14" font-style="italic">or your track's audio</text>
+
+  <!-- II. the body -->
+  <circle cx="600" cy="250" r="125" fill="url(#jade)"/>
+  <g fill="none" stroke="#6fd6bb">
+    <circle cx="600" cy="250" r="95" stroke-opacity="0.25"/>
+    <path d="M600,170 C650,168 684,204 680,250 C684,298 648,334 600,330 C552,334 516,298 520,250 C516,204 550,168 600,170 Z" stroke-width="2"/>
+    <path d="M600,195 C636,192 658,220 655,250 C659,282 632,306 600,305 C566,308 542,282 545,250 C543,220 566,196 600,195 Z" stroke-width="1.5" stroke-opacity="0.7"/>
+    <circle cx="600" cy="250" r="30" stroke-opacity="0.4"/>
+  </g>
+  <circle cx="676" cy="216" r="5" fill="#f6d98f"/>
+  <text x="600" y="110" text-anchor="middle" fill="#6fd6bb" font-size="16">II</text>
+  <text x="600" y="135" text-anchor="middle" fill="#f1ebdd" font-size="24" font-style="italic">the body</text>
+  <text x="600" y="400" text-anchor="middle" fill="#b4b1c8" font-size="15" font-family="Segoe UI, Helvetica, sans-serif" letter-spacing="2">RESONATOR</text>
+  <text x="600" y="424" text-anchor="middle" fill="#6e6c88" font-size="14" font-style="italic">modal · strings · dispersion</text>
+  <text x="600" y="446" text-anchor="middle" fill="#6e6c88" font-size="14" font-style="italic">FM · chords · cavern</text>
+
+  <!-- III. the sky -->
+  <ellipse cx="1000" cy="240" rx="170" ry="110" fill="url(#pearl)"/>
+  <path d="M870,280 C872,250 892,236 912,244 C916,214 946,204 966,222 C980,196 1022,194 1034,222 C1056,206 1090,220 1086,250 C1104,256 1110,274 1104,280 Z" fill="#9ec6ff" fill-opacity="0.22" stroke="#9ec6ff" stroke-width="1.6"/>
+  <path d="M870,282 C900,300 1060,300 1104,282" fill="none" stroke="#b9a4ff" stroke-opacity="0.35"/>
+  <line x1="860" y1="281" x2="1120" y2="281" stroke="#9ec6ff" stroke-opacity="0.3"/>
+  <g fill="#f1ebdd"><circle cx="940" cy="236" r="2.5"/><circle cx="985" cy="214" r="2"/><circle cx="1030" cy="244" r="3"/><circle cx="1062" cy="228" r="2"/></g>
+  <line x1="1000" y1="180" x2="1000" y2="300" stroke="#f6d98f" stroke-dasharray="4 4" stroke-opacity="0.6"/>
+  <text x="1000" y="110" text-anchor="middle" fill="#9ec6ff" font-size="16">III</text>
+  <text x="1000" y="135" text-anchor="middle" fill="#f1ebdd" font-size="24" font-style="italic">the sky</text>
+  <text x="1000" y="400" text-anchor="middle" fill="#b4b1c8" font-size="15" font-family="Segoe UI, Helvetica, sans-serif" letter-spacing="2">CLOUDS &amp; SPACE</text>
+  <text x="1000" y="424" text-anchor="middle" fill="#6e6c88" font-size="14" font-style="italic">granular · pitch / stretch</text>
+  <text x="1000" y="446" text-anchor="middle" fill="#6e6c88" font-size="14" font-style="italic">looping delay · spectral · reverb</text>
+
+  <!-- the tides -->
+  <path d="M 200 488 L 1000 488" stroke="#f28dab" stroke-opacity="0.35" stroke-width="1"/>
+  <text x="600" y="482" text-anchor="middle" fill="#f28dab" font-size="15" font-style="italic">the tides — 3 LFOs, 3 envelopes and the Loom move any of 20 dials</text>
+  <path d="M 300 500 Q 300 470 290 330" fill="none" stroke="#f28dab" stroke-opacity="0.35" marker-end="url(#arrow)"/>
+  <path d="M 600 470 L 600 362" fill="none" stroke="#f28dab" stroke-opacity="0.35" marker-end="url(#arrow)"/>
+  <path d="M 900 500 Q 900 470 915 330" fill="none" stroke="#f28dab" stroke-opacity="0.35" marker-end="url(#arrow)"/>
+</svg>

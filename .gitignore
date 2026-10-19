@@ -1,0 +1,19 @@
+# build output
+build/
+_cb/
+out/
+cmake-build-*/
+
+# local dependency checkouts (CMake fetches them when absent)
+deps/
+
+# local working files
+_backup_original/
+screenshots/
+.vs/
+.vscode/
+.idea/
+.claude/
+*.user
+.DS_Store
+Thumbs.db
