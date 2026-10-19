@@ -45,6 +45,12 @@ It can also be an effect: feed your track's audio in and let it excite the reson
   <img src="docs/images/journey-canvas.png" alt="The journey canvas: the breath, the body and the sky" width="100%">
 </p>
 
+## Download
+
+Ready-made builds for **Windows, macOS (Apple Silicon & Intel) and Linux** — CLAP, VST3,
+Standalone, and AU on macOS — are on the
+**[releases page](https://github.com/mtyas/Kings-into-Clowns/releases)**, with install notes.
+
 ## Read the manual
 
 **[→ The manual](docs/MANUAL.md)** walks through every stage, dial and gesture.
@@ -111,3 +117,8 @@ The DSP is inspired by and adapted from the open-source Mutable Instruments Euro
 (Braids, Plaits, Rings, Clouds, Marbles) and the Oliverb firmware by Émilie Gillet, released under
 the MIT license. Kings into Clowns is an independent work and is not affiliated with or endorsed by
 Mutable Instruments. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Licence
+
+Kings into Clowns is released under the [MIT licence](LICENSE).
+It is built with JUCE, which has its own licence terms (see the notices).

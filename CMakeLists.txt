@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(KingsIntoClowns VERSION 1.0.0 LANGUAGES C CXX)
+project(KingsIntoClowns VERSION 0.77.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -36,12 +36,18 @@ else()
     set(RIC_CJE_DIR "${clap_juce_extensions_SOURCE_DIR}")
 endif()
 
+# Audio Unit as well on macOS (Logic, GarageBand, ...)
+set(RIC_FORMATS VST3 Standalone)
+if(APPLE)
+    list(APPEND RIC_FORMATS AU)
+endif()
+
 juce_add_plugin(KingsIntoClowns
     COMPANY_NAME "mtyas"
     BUNDLE_ID "com.mtyas.kingsintoclowns"
     PLUGIN_MANUFACTURER_CODE Mtya
     PLUGIN_CODE KiCl
-    FORMATS VST3 Standalone
+    FORMATS ${RIC_FORMATS}
     PRODUCT_NAME "Kings into Clowns"
     IS_SYNTH TRUE
     NEEDS_MIDI_INPUT TRUE
