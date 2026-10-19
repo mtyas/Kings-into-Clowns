@@ -75,7 +75,8 @@ jobs:
           [[ "$GITHUB_REF_TYPE" == "tag" ]] || version="dev-${GITHUB_SHA::7}"
           cd build/KingsIntoClowns_artefacts/Release
           rm -f CLAP/*.exp CLAP/*.lib
-          formats=$(ls -d CLAP VST3 Standalone AU 2>/dev/null | tr '\n' ' ')
+          formats=""
+          for f in CLAP VST3 AU Standalone; do [[ -d "$f" ]] && formats="$formats $f"; done
           cp ../../../LICENSE ../../../THIRD_PARTY_NOTICES.md .
           zip_name="Kings-into-Clowns-${version}-${{ matrix.slug }}.zip"
           cmake -E tar cf "$zip_name" --format=zip $formats LICENSE THIRD_PARTY_NOTICES.md
